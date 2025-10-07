@@ -22,3 +22,7 @@ My personal goal is to implement the following:
 - [ ] train ImageNet with vision transformer
 
 These will constantly change, depending on mood and time of day. This is all for educational purposes only. I don't have the nerve or the time to write a production grade library. 
+
+### notes
+
+You can read about the process of building this library in [Notes.md](Notes.md). Even though I write in a conversational tone these are basically just notes for myself to deeply understand what I did. I hope that these are also helpful to someone other than me but here is no guarantee.
