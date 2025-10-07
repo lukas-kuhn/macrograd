@@ -7,9 +7,9 @@ Backpropagation is done via a computational graph so we always want to know, how
 ### Chain Rule 
 
 If a variable _z_ depends on the variable _y_, which itself depends on the variable _x_ then _z_ (rather obviously) depends _x_ as well. The chain rule is expressed as 
-$$
+$
 \frac{dz}{dx} = \frac{dz}{dy} * \frac{dy}{dx}
-$$
+$
 For our computational graph this means we first have to calculate $\frac{dz}{dy}$ before we then can multiply that by $\frac{dy}{dx}$, therefor the topological sort that we traverse in reverse.
 
 ### Matrix multiply
@@ -17,14 +17,14 @@ For our computational graph this means we first have to calculate $\frac{dz}{dy}
 Now what we mostly do in computer vision or machine learning in general is multiply matrices. This is because weights of layers (also called neurons) are most effectively stored in a matrix. 
 
 Let's say we have the following input
-$$
+$
 \begin{pmatrix}
 x_{11} & x_{12} & x_{13} \\
 x_{21} & x_{22} & x_{23} \\
 \end{pmatrix}
-$$
+$
 where $x_{11}$ is the first feature of the first sample and $x_{12}$ is the second feature of the first sample. We want to multiply this effectively by multiple neurons. Let's sketch the case of a single neuron with weights $w_{11}, w_{21},  w_{31}$ which we obviosuly need because we need a weight for each feature (columns in input matrix).
-$$
+$
 \begin{pmatrix}
 x_{11} & x_{12} & x_{13} \\
 x_{21} & x_{22} & x_{23} \\
@@ -35,9 +35,9 @@ w_{11} \\
 w_{21} \\
 w_{31} \\
 \end{pmatrix}
-$$
+$
 Now this would not be very powerful. We basically weight each input only once and output it into a $2 \times 1$ matrix. So we need multiple neurons which make up the columns of our weight matrix.
-$$
+$
 \begin{pmatrix}
 x_{11} & x_{12} & x_{13} \\
 x_{21} & x_{22} & x_{23} \\
@@ -48,11 +48,11 @@ w_{11} & w_{12} & w_{13}\\
 w_{21} & w_{22} & w_{23}\\
 w_{31} & w_{32} & w_{33}\\
 \end{pmatrix}
-$$
+$
 Now we have a litle bit more power. We have three different neurons (the columns of $W$) with their own weight (rows in $W$) for each input feature (columns) in $X$. This is now a simple matrix multiplication to get the intermediate representation in the network.
 
 For a standard linear layer we would add on a bias matrix $B$. 
-$$
+$
 \begin{pmatrix}
 x_{11} & x_{12} & x_{13} \\
 x_{21} & x_{22} & x_{23} \\
@@ -67,7 +67,7 @@ w_{31} & w_{32} & w_{33}\\
 \begin{pmatrix}
 b_{1} & b_{2} & b_{3}\\ 
 \end{pmatrix}
-$$
+$
 Interestingly enough this bias which has dim $(out\_features, )$ is broadcasted over the rows and not the columns (across the left most dimension). [**Sidenote:** this is actually always the case for numpy - it matches the right most dimension and broadcasts across the leftmost.] This is exactly what we want since each neuron, not each feature, gets its own bias.
 
 Back to computational graphs and the chain rule! We want to figure out how much influence for example $w11$ had on the output (which usually would be a loss $L$ in this setting and therefore is noted as $\frac{dL}{dw_{11}}$). 
@@ -92,19 +92,19 @@ o_{21} & o_{22} & o_{23}
 x_{11}w_{11} + x_{12}w_{21} + x_{13}w_{31} & ... & ...\\ 
 x_{21}w_{11} + x_{22}w_{21} + x_{23}w_{31} & ... & ...
 \end{pmatrix}
-$$
+$
 As we can see $w_{11}$ has influence on the output $O$ in $o_{11}$ and $o_{12}$ via $x_{11}$ and $x_{21}$. Since it is multiplication the influence of $w_{11}$ on $O$ ($\frac{dO}{dw_{11}}$) is exactly $x_{11} + x_{21}$. We also want to incorporate any gradient that  $O$ has on the outcome $L$ which in this specific case would be gradients in the form $2 \times 3$. 
 
 So let's quickly get order into this: We have $X$ which is $2 \times 3$ and $\frac{dL}{dO}$ which is another matrix with dimensions $2  \times 3$. We want the gradients $\frac{dL}{do_{11}}$ and   $\frac{dL}{do_{21}}$ multiplied by $x_{11}$ and $x_{21}$ respectively. And another constraint is that the matrix with the gradients for $W$ needs to be $3 \times 3$. 
 
 The solution is to transpose the input matrix ($X^T$) and multiply it with the matrix $\frac{dL}{dO}$ which results in a $(3 \times 2) * (2 \times 3)$ matrix multiplication, so a $3 \times 3$ matrix as an output with the exact multiplication that we want.
-$$
+$
 \frac{dL}{dW} = X^T * \frac{dL}{dO}
-$$
+$
 But we also want to know the gradients for the matrix $X$ ($\frac{dL}{dX}$) because $X$ does not have to be an input, it could also be intermediate activations inside the hidden layer (if we assume a dense network). Again we need to incorporate the gradients of $O$ based on the chain rule: $\frac{dL}{dX} = \frac{dL}{dO} * \frac{dO}{dX}$. As above we assume we have them (via topological computation of the gradients these have been computed before we arrived here). If we look again at one specific value such as $x_{11}$ we can see that it influenced $o_{11}, o_{12}, o_{13}$ via $w_{11}, w_{12}, w_{13}$ respectively. To get these multiplied correctly and also get an output matrix of dim $2 \times 3$ we just multiply the gradients $\frac{dL}{dO}$ with the transposed weight matrix ($W^T$). 
-$$
+$
 \frac{dL}{dX} = \frac{dL}{dO} * W^T
-$$
+$
 Now we have the gradients for both $X$ and $W$ and all we need is some matrix multiplies. Magic!
 
 ### Broadcasting issues in other computations
