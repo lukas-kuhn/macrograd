@@ -1,3 +1,5 @@
+**This can be hard to read on Github, but every other markdown viewer with Latex support works fine**
+
 ## Notes on computer vision
 
 ### Backprop
